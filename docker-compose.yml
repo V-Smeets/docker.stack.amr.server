@@ -1,0 +1,21 @@
+---
+version: "3.7"
+
+volumes:
+  amqp-data:
+
+networks:
+  net:
+    driver: "overlay"
+
+services:
+  amqp:
+    image: "vsmeets/amr-server_amqp"
+    hostname: "amr-server"
+    volumes:
+      - "amqp-data:/var/lib/rabbitmq"
+    networks:
+      - "net"
+    ports:
+      - "5671:5671"
+      - "15671:15671"
