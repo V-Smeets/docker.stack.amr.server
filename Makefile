@@ -8,6 +8,7 @@ AMQP_IMAGE_VERSION_TAG	= ${AMQP_IMAGE_TAG}:${VERSION}
 
 all::
 clean::
+distclean:: clean
 
 # amqp
 all:: ${AMQP_IMAGE_NAME}
@@ -23,5 +24,6 @@ all:: docker-compose.yml
 clean::
 	docker stack rm ${STACK_NAME}
 	-docker container wait `docker container ls --filter label=com.docker.stack.namespace="${STACK_NAME}" --quiet`
+distclean::
 	docker system prune --all --filter label=com.docker.stack.namespace="${STACK_NAME}" --volumes --force
 docker-compose.yml: ${AMQP_IMAGE_NAME}
