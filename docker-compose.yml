@@ -1,6 +1,33 @@
 ---
 version: "3.7"
 
+secrets:
+  # The management user
+  amqp.admin.user:
+    file: "secret.amqp.admin.user"
+  amqp.admin.password:
+    file: "secret.amqp.admin.password"
+  # The user with which the amr client connects to the AMQP
+  amqp.amr.client.user:
+    file: "secret.amqp.amr.client.user"
+  amqp.amr.client.password:
+    file: "secret.amqp.amr.client.password"
+  # The user with which the amr server connects to the AMQP
+  amqp.amr.server.user:
+    file: "secret.amqp.amr.server.user"
+  amqp.amr.server.password:
+    file: "secret.amqp.amr.server.password"
+  # The user with which the shovel connects to the AMQP to read the client messages
+  amqp.shovel.client.user:
+    file: "secret.amqp.shovel.client.user"
+  amqp.shovel.client.password:
+    file: "secret.amqp.shovel.client.password"
+  # The user with which the shovel connects to the AMQP to write the messages to the server
+  amqp.shovel.server.user:
+    file: "secret.amqp.shovel.server.user"
+  amqp.shovel.server.password:
+    file: "secret.amqp.shovel.server.password"
+
 volumes:
   amqp-data:
 
@@ -10,8 +37,24 @@ networks:
 
 services:
   amqp:
-    image: "vsmeets/amr-server_amqp"
+    build:
+      context: "./amqp"
+    image: "amr-server-amqp"
     hostname: "amr-server"
+    secrets:
+      - "amqp.admin.user"
+      - "amqp.admin.password"
+      - "amqp.amr.client.user"
+      - "amqp.amr.client.password"
+      - "amqp.amr.server.user"
+      - "amqp.amr.server.password"
+      - "amqp.shovel.client.user"
+      - "amqp.shovel.client.password"
+      - "amqp.shovel.server.user"
+      - "amqp.shovel.server.password"
+    environment:
+      RABBITMQ_DEFAULT_USER_FILE: "/run/secrets/amqp.admin.user"
+      RABBITMQ_DEFAULT_PASS_FILE: "/run/secrets/amqp.admin.password"
     volumes:
       - "amqp-data:/var/lib/rabbitmq"
     networks:
