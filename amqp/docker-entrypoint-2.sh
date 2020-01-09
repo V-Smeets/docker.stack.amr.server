@@ -24,90 +24,97 @@ function rabbit_password_hashing_sha256()
     echo "$saltedHashB64"
 }
 
-cat > /etc/rabbitmq/definitions.json <<EOT
-{
-    "global_parameters": [
+definitionsFile="/etc/rabbitmq/definitions.json"
+if [ -f "/var/lib/rabbitmq/.erlang.cookie" ]
+then
+    # Don't overwrite any changed settings.
+    rm -f "$definitionsFile"
+else
+	cat > "$definitionsFile" <<-EOT
 	{
-	    "name": "cluster_name",
-	    "value": "rabbit@amr-server"
+	    "global_parameters": [
+		{
+		    "name": "cluster_name",
+		    "value": "rabbit@amr-server"
+		}
+	    ],
+	    "users": [
+		{
+		    "name": "$(< /run/secrets/amqp.admin.user)",
+		    "password_hash": "$(rabbit_password_hashing_sha256 /run/secrets/amqp.admin.password)",
+		    "hashing_algorithm": "rabbit_password_hashing_sha256",
+		    "tags": "administrator"
+		},
+		{
+		    "name": "$(< /run/secrets/amqp.amr.client.user)",
+		    "password_hash": "$(rabbit_password_hashing_sha256 /run/secrets/amqp.amr.client.password)",
+		    "hashing_algorithm": "rabbit_password_hashing_sha256",
+		    "tags": ""
+		},
+		{
+		    "name": "$(< /run/secrets/amqp.amr.server.user)",
+		    "password_hash": "$(rabbit_password_hashing_sha256 /run/secrets/amqp.amr.server.password)",
+		    "hashing_algorithm": "rabbit_password_hashing_sha256",
+		    "tags": ""
+		},
+		{
+		    "name": "$(< /run/secrets/amqp.shovel.client.user)",
+		    "password_hash": "$(rabbit_password_hashing_sha256 /run/secrets/amqp.shovel.client.password)",
+		    "hashing_algorithm": "rabbit_password_hashing_sha256",
+		    "tags": ""
+		},
+		{
+		    "name": "$(< /run/secrets/amqp.shovel.server.user)",
+		    "password_hash": "$(rabbit_password_hashing_sha256 /run/secrets/amqp.shovel.server.password)",
+		    "hashing_algorithm": "rabbit_password_hashing_sha256",
+		    "tags": ""
+		}
+	    ],
+	    "vhosts": [
+		{
+		    "name": "/"
+		}
+	    ],
+	    "permissions": [
+		{
+		    "user": "$(< /run/secrets/amqp.admin.user)",
+		    "vhost": "/",
+		    "configure": ".*",
+		    "write": ".*",
+		    "read": ".*"
+		},
+		{
+		    "user": "$(< /run/secrets/amqp.amr.client.user)",
+		    "vhost": "/",
+		    "configure": ".*",
+		    "write": ".*",
+		    "read": ""
+		},
+		{
+		    "user": "$(< /run/secrets/amqp.amr.server.user)",
+		    "vhost": "/",
+		    "configure": ".*",
+		    "write": "",
+		    "read": ".*"
+		},
+		{
+		    "user": "$(< /run/secrets/amqp.shovel.client.user)",
+		    "vhost": "/",
+		    "configure": "",
+		    "write": "",
+		    "read": ".*"
+		},
+		{
+		    "user": "$(< /run/secrets/amqp.shovel.server.user)",
+		    "vhost": "/",
+		    "configure": "",
+		    "write": ".*",
+		    "read": ""
+		}
+	    ]
 	}
-    ],
-    "users": [
-	{
-	    "name": "$(< /run/secrets/amqp.admin.user)",
-	    "password_hash": "$(rabbit_password_hashing_sha256 /run/secrets/amqp.admin.password)",
-	    "hashing_algorithm": "rabbit_password_hashing_sha256",
-	    "tags": "administrator"
-	},
-	{
-	    "name": "$(< /run/secrets/amqp.amr.client.user)",
-	    "password_hash": "$(rabbit_password_hashing_sha256 /run/secrets/amqp.amr.client.password)",
-	    "hashing_algorithm": "rabbit_password_hashing_sha256",
-	    "tags": ""
-	},
-	{
-	    "name": "$(< /run/secrets/amqp.amr.server.user)",
-	    "password_hash": "$(rabbit_password_hashing_sha256 /run/secrets/amqp.amr.server.password)",
-	    "hashing_algorithm": "rabbit_password_hashing_sha256",
-	    "tags": ""
-	},
-	{
-	    "name": "$(< /run/secrets/amqp.shovel.client.user)",
-	    "password_hash": "$(rabbit_password_hashing_sha256 /run/secrets/amqp.shovel.client.password)",
-	    "hashing_algorithm": "rabbit_password_hashing_sha256",
-	    "tags": ""
-	},
-	{
-	    "name": "$(< /run/secrets/amqp.shovel.server.user)",
-	    "password_hash": "$(rabbit_password_hashing_sha256 /run/secrets/amqp.shovel.server.password)",
-	    "hashing_algorithm": "rabbit_password_hashing_sha256",
-	    "tags": ""
-	}
-    ],
-    "vhosts": [
-	{
-	    "name": "/"
-	}
-    ],
-    "permissions": [
-	{
-	    "user": "$(< /run/secrets/amqp.admin.user)",
-	    "vhost": "/",
-	    "configure": ".*",
-	    "write": ".*",
-	    "read": ".*"
-	},
-	{
-	    "user": "$(< /run/secrets/amqp.amr.client.user)",
-	    "vhost": "/",
-	    "configure": ".*",
-	    "write": ".*",
-	    "read": ""
-	},
-	{
-	    "user": "$(< /run/secrets/amqp.amr.server.user)",
-	    "vhost": "/",
-	    "configure": ".*",
-	    "write": "",
-	    "read": ".*"
-	},
-	{
-	    "user": "$(< /run/secrets/amqp.shovel.client.user)",
-	    "vhost": "/",
-	    "configure": "",
-	    "write": "",
-	    "read": ".*"
-	},
-	{
-	    "user": "$(< /run/secrets/amqp.shovel.server.user)",
-	    "vhost": "/",
-	    "configure": "",
-	    "write": ".*",
-	    "read": ""
-	}
-    ]
-}
-EOT
+	EOT
+fi
 
 exec docker-entrypoint.sh "$@"
 
