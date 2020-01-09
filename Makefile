@@ -1,29 +1,55 @@
 #
-DOCKER_USER_NAME	= vsmeets
-STACK_NAME		= amr-server
 VERSION			= $(shell git describe)
-AMQP_IMAGE_NAME		= ${STACK_NAME}_amqp
-AMQP_IMAGE_TAG		= ${DOCKER_USER_NAME}/${AMQP_IMAGE_NAME}
-AMQP_IMAGE_VERSION_TAG	= ${AMQP_IMAGE_TAG}:${VERSION}
+STACK_NAME		= amr-server
+SECRET_NAMES		= amqp.admin.user \
+			  amqp.admin.password \
+			  amqp.amr.client.user \
+			  amqp.amr.client.password \
+			  amqp.amr.server.user \
+			  amqp.amr.server.password \
+			  amqp.shovel.client.user \
+			  amqp.shovel.client.password \
+			  amqp.shovel.server.user \
+			  amqp.shovel.server.password
+SECRET_FILE_NAMES	= ${SECRET_NAMES:%=secret.%}
 
+# General
 all::
 clean::
 distclean:: clean
 
-# amqp
-all:: ${AMQP_IMAGE_NAME}
-clean::
-	$(RM) ${AMQP_IMAGE_NAME}
-${AMQP_IMAGE_NAME}: amqp/Dockerfile
-	docker build --tag="${AMQP_IMAGE_TAG}" --tag="${AMQP_IMAGE_VERSION_TAG}" amqp
-	touch $@
+# Secrets
+all:: ${SECRET_FILE_NAMES}
+distclean::
+	$(RM) ${SECRET_FILE_NAMES}
+secret.amqp.admin.user:
+	echo "admin" >$@
+secret.amqp.admin.password:
+	openssl rand -base64 15 >$@
+secret.amqp.amr.client.user:
+	echo "amr-client" >$@
+secret.amqp.amr.client.password:
+	openssl rand -base64 15 >$@
+secret.amqp.amr.server.user:
+	echo "amr-server" >$@
+secret.amqp.amr.server.password:
+	openssl rand -base64 15 >$@
+secret.amqp.shovel.client.user:
+	echo "shovel-client" >$@
+secret.amqp.shovel.client.password:
+	openssl rand -base64 15 >$@
+secret.amqp.shovel.server.user:
+	echo "shovel-server" >$@
+secret.amqp.shovel.server.password:
+	openssl rand -base64 15 >$@
 
 # stack
 all:: docker-compose.yml
-	docker stack deploy --compose-file docker-compose.yml ${STACK_NAME}
+	docker-compose --file docker-compose.yml --project-name ${STACK_NAME} build
+	docker stack deploy --compose-file docker-compose.yml --prune ${STACK_NAME}
 clean::
 	docker stack rm ${STACK_NAME}
 	-docker container wait `docker container ls --filter label=com.docker.stack.namespace="${STACK_NAME}" --quiet`
 distclean::
 	docker system prune --all --filter label=com.docker.stack.namespace="${STACK_NAME}" --volumes --force
-docker-compose.yml: ${AMQP_IMAGE_NAME}
+docker-compose.yml: ${SECRET_FILE_NAMES}
