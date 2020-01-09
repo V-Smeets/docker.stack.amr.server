@@ -16,12 +16,12 @@ function rabbit_password_hashing_sha256()
 {
     passwordFile="$1"
     password="$(< "$passwordFile")"
-    salt="$(head -c 4 /dev/urandom)"
-    saltedPassword="$salt$password"
-    hash="$(echo -n "$saltedPassword" | sha256sum | head -c 64 | hex2bin)"
-    saltedHash="$salt$hash"
-    saltedHashBase64="$(echo -n "$saltedHash" | base64)"
-    echo "$saltedHashBase64"
+    passwordB64="$(echo -n "$password" | base64)"
+    saltB64="$(head -c 4 /dev/urandom | base64)"
+    saltedPasswordB64="$(echo "$saltB64$passwordB64" | base64 -d | base64)"
+    hashB64="$(echo -n "$saltedPasswordB64" | base64 -d | sha256sum | head -c 64 | hex2bin | base64)"
+    saltedHashB64="$(echo "$saltB64$hashB64" | base64 -d | base64)"
+    echo "$saltedHashB64"
 }
 
 cat > /etc/rabbitmq/definitions.json <<EOT
@@ -108,9 +108,6 @@ cat > /etc/rabbitmq/definitions.json <<EOT
     ]
 }
 EOT
-
-cat /etc/rabbitmq/definitions.json
-echo ""
 
 exec docker-entrypoint.sh "$@"
 
