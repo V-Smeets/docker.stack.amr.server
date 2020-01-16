@@ -66,3 +66,13 @@ services:
       - "15672:15672"
       # clustering
       # "25672:25672"
+
+  nginx:
+    build:
+      context: "./nginx"
+    image: "amr-server-nginx"
+    networks:
+      - "net"
+    ports:
+      # http
+      - "80:80"
