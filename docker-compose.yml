@@ -27,9 +27,18 @@ secrets:
     file: "secret.amqp.shovel.server.user"
   amqp.shovel.server.password:
     file: "secret.amqp.shovel.server.password"
+  # Access to DirectAdmin for DNS administration
+  certbot.directadmin.url:
+    file: "secret.certbot.directadmin.url"
+  certbot.directadmin.username:
+    file: "secret.certbot.directadmin.username"
+  certbot.directadmin.password:
+    file: "secret.certbot.directadmin.password"
 
 volumes:
   amqp-data:
+  certbot-config:
+  certbot-work:
 
 networks:
   net:
@@ -66,6 +75,20 @@ services:
       - "15672:15672"
       # clustering
       # "25672:25672"
+
+  certbot:
+    build:
+      context: "./certbot"
+    image: "amr-server-certbot"
+    secrets:
+      - "certbot.directadmin.url"
+      - "certbot.directadmin.username"
+      - "certbot.directadmin.password"
+    volumes:
+      - "certbot-config:/etc/letsencrypt"
+      - "certbot-work:/var/lib/letsencrypt"
+    networks:
+      - "net"
 
   nginx:
     build:
