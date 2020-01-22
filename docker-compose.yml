@@ -87,6 +87,7 @@ services:
     volumes:
       - "certbot-config:/etc/letsencrypt"
       - "certbot-work:/var/lib/letsencrypt"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
     networks:
       - "net"
 

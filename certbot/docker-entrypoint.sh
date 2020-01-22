@@ -4,6 +4,8 @@ certName="amr-ens"
 domains="amr-ens.vsmeets.nl"
 email="Vincent.VSmeets@GMail.com"
 
+nginxServiceName="amr-server_nginx"
+
 credentialsFile="/tmp/directadmin-credentials.ini"
 keyFile="/etc/letsencrypt/live/amr-ens/privkey.pem"
 
@@ -31,8 +33,23 @@ do
 	if [ "$keyFileHash" != "$previousKeyFileHash" ]
 	then
 		echo "The key file has changed!"
-		ls -lRA /etc/letsencrypt
-		ls -lRA /var/lib/letsencrypt
+		filters="{\"label\": [\"com.docker.swarm.service.name=${nginxServiceName}\"]}"
+		filtersEncoded="$(echo "$filters" | jq --slurp --raw-input --raw-output "@uri")"
+		containerIds="$(
+			curl \
+				--silent \
+				--unix-socket /var/run/docker.sock \
+				http://localhost/containers/json?filters="$filtersEncoded" \
+			| jq --raw-output '.[].Id')"
+		for containerId in $containerIds
+		do
+			echo "Sending signal to container $containerId"
+			curl \
+				--silent \
+				--unix-socket /var/run/docker.sock \
+				--request POST \
+				"http://localhost/containers/${containerId}/kill?signal=HUP"
+		done
 	fi
 	previousKeyFileHash="$keyFileHash"
 	sleep 43200
