@@ -15,6 +15,12 @@ sed 's/^/certbot_dns_directadmin:directadmin_url = /'		/run/secrets/certbot.dire
 sed 's/^/certbot_dns_directadmin:directadmin_username = /'	/run/secrets/certbot.directadmin.username	>>"$credentialsFile"
 sed 's/^/certbot_dns_directadmin:directadmin_password = /'	/run/secrets/certbot.directadmin.password	>>"$credentialsFile"
 
+certbotNginxName="certbot-nginx"
+certbotNginxOutput=`pip show --files "$certbotNginxName"`
+certbotNginxLocation=`echo "$certbotNginxOutput" | awk '\$1 == "Location:" { print \$2 }'`
+certbotNginxFile=`echo "$certbotNginxOutput" | awk '/options-ssl-nginx.conf\$/ { print \$1 }'`
+cp "$certbotNginxLocation/$certbotNginxFile" /etc/letsencrypt
+
 keyFileHash="$(md5sum "$keyFile" 2>/dev/null)"
 previousKeyFileHash="$keyFileHash"
 while :

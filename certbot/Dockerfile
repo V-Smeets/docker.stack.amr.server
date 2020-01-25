@@ -5,7 +5,8 @@ RUN apk add --no-cache \
 	jq \
 	tini
 RUN pip install \
-	certbot-dns-directadmin
+	certbot-dns-directadmin \
+	certbot-nginx
 
 COPY docker-entrypoint.sh /usr/local/bin/
 
