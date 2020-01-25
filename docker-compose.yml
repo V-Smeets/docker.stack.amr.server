@@ -102,3 +102,5 @@ services:
     ports:
       # http
       - "80:80"
+      # https
+      - "443:443"
