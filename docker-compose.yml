@@ -48,7 +48,7 @@ services:
   amqp:
     build:
       context: "./amqp"
-    image: "amr-server-amqp"
+    image: "vsmeets/amr-server-amqp"
     hostname: "amr-server"
     secrets:
       - "amqp.admin.user"
@@ -79,7 +79,7 @@ services:
   certbot:
     build:
       context: "./certbot"
-    image: "amr-server-certbot"
+    image: "vsmeets/amr-server-certbot"
     secrets:
       - "certbot.directadmin.url"
       - "certbot.directadmin.username"
@@ -94,7 +94,7 @@ services:
   nginx:
     build:
       context: "./nginx"
-    image: "amr-server-nginx"
+    image: "vsmeets/amr-server-nginx"
     networks:
       - "net"
     ports:

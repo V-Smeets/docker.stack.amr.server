@@ -54,7 +54,8 @@ secret.certbot.directadmin.password:
 
 # stack
 all:: docker-compose.yml
-	docker-compose --file docker-compose.yml --project-name ${STACK_NAME} build
+	docker-compose --file docker-compose.yml --project-name ${STACK_NAME} build --pull
+	docker-compose --file docker-compose.yml --project-name ${STACK_NAME} push
 	docker stack deploy --compose-file docker-compose.yml --prune ${STACK_NAME}
 clean::
 	docker stack rm ${STACK_NAME}
