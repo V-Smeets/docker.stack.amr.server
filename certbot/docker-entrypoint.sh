@@ -8,6 +8,9 @@ nginxServiceName="amr-server_nginx"
 
 credentialsFile="/tmp/directadmin-credentials.ini"
 keyFile="/etc/letsencrypt/live/amr-ens/privkey.pem"
+prodFile="/etc/letsencrypt/prod"
+prodDisabledFile="${prodFile}.disabled"
+prodEnabledFile="${prodFile}.enabled"
 
 touch "$credentialsFile"
 chmod go-rwx "$credentialsFile"
@@ -20,6 +23,16 @@ certbotNginxOutput=`pip show --files "$certbotNginxName"`
 certbotNginxLocation=`echo "$certbotNginxOutput" | awk '\$1 == "Location:" { print \$2 }'`
 certbotNginxFile=`echo "$certbotNginxOutput" | awk '/options-ssl-nginx.conf\$/ { print \$1 }'`
 cp "$certbotNginxLocation/$certbotNginxFile" /etc/letsencrypt
+
+if [ -e "$prodEnabledFile" ]
+then
+	echo "Production certificates: enabled"
+	certbotOptions=""
+else
+	echo "Production certificates: disabled"
+	certbotOptions="--test-cert"
+	echo "Move this file to $prodEnabledFile to enable production certificates" >"$prodDisabledFile"
+fi
 
 keyFileHash="$(md5sum "$keyFile" 2>/dev/null)"
 previousKeyFileHash="$keyFileHash"
@@ -34,7 +47,7 @@ do
 		--authenticator certbot-dns-directadmin:directadmin \
 		--certbot-dns-directadmin:directadmin-credentials "$credentialsFile" \
 		--non-interactive \
-		--test-cert
+		$certbotOptions
 	keyFileHash="$(md5sum "$keyFile" 2>/dev/null)"
 	if [ "$keyFileHash" != "$previousKeyFileHash" ]
 	then
