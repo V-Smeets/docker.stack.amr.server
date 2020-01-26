@@ -10,7 +10,10 @@ SECRET_NAMES		= amqp.admin.user \
 			  amqp.shovel.client.user \
 			  amqp.shovel.client.password \
 			  amqp.shovel.server.user \
-			  amqp.shovel.server.password
+			  amqp.shovel.server.password \
+			  certbot.directadmin.url \
+			  certbot.directadmin.username \
+			  certbot.directadmin.password
 SECRET_FILE_NAMES	= ${SECRET_NAMES:%=secret.%}
 
 # General
@@ -42,10 +45,17 @@ secret.amqp.shovel.server.user:
 	echo "shovel-server" >$@
 secret.amqp.shovel.server.password:
 	openssl rand -base64 15 >$@
+secret.certbot.directadmin.url:
+	echo "https://directadmin.example.com:2222" >$@
+secret.certbot.directadmin.username:
+	echo "user" >$@
+secret.certbot.directadmin.password:
+	echo "password" >$@
 
 # stack
 all:: docker-compose.yml
-	docker-compose --file docker-compose.yml --project-name ${STACK_NAME} build
+	docker-compose --file docker-compose.yml --project-name ${STACK_NAME} build --pull
+	docker-compose --file docker-compose.yml --project-name ${STACK_NAME} push
 	docker stack deploy --compose-file docker-compose.yml --prune ${STACK_NAME}
 clean::
 	docker stack rm ${STACK_NAME}
