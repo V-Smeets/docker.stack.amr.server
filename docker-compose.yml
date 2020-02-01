@@ -48,7 +48,7 @@ services:
   amqp:
     build:
       context: "./amqp"
-    image: "vsmeets/amr-server-amqp"
+    image: "127.0.0.1:5000/amr-server-amqp"
     hostname: "amr-server"
     secrets:
       - "amqp.admin.user"
@@ -79,7 +79,7 @@ services:
   certbot:
     build:
       context: "./certbot"
-    image: "vsmeets/amr-server-certbot"
+    image: "127.0.0.1:5000/amr-server-certbot"
     secrets:
       - "certbot.directadmin.url"
       - "certbot.directadmin.username"
@@ -94,7 +94,7 @@ services:
   nginx:
     build:
       context: "./nginx"
-    image: "vsmeets/amr-server-nginx"
+    image: "127.0.0.1:5000/amr-server-nginx"
     volumes:
       - "certbot-config:/etc/letsencrypt:ro"
     networks:
