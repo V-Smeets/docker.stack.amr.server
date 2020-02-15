@@ -1,5 +1,4 @@
 #
-VERSION			= $(shell git describe)
 STACK_NAME		= amr-server
 SECRET_NAMES		= amqp.admin.user \
 			  amqp.admin.password \
@@ -22,9 +21,10 @@ clean::
 distclean:: clean
 
 # Secrets
-all:: ${SECRET_FILE_NAMES}
+all:: secrets
 distclean::
 	$(RM) ${SECRET_FILE_NAMES}
+secrets: ${SECRET_FILE_NAMES}
 secret.amqp.admin.user:
 	echo "admin" >$@
 secret.amqp.admin.password:
@@ -52,14 +52,15 @@ secret.certbot.directadmin.username:
 secret.certbot.directadmin.password:
 	echo "password" >$@
 
-# stack
-all:: docker-compose.yml
-	docker-compose --file docker-compose.yml --project-name ${STACK_NAME} build --pull
-	docker-compose --file docker-compose.yml --project-name ${STACK_NAME} push
-	docker stack deploy --compose-file docker-compose.yml --prune ${STACK_NAME}
+# Stack
+all:: stack
 clean::
 	docker stack rm ${STACK_NAME}
 	-docker container wait `docker container ls --filter label=com.docker.stack.namespace="${STACK_NAME}" --quiet`
 distclean::
 	docker system prune --all --filter label=com.docker.stack.namespace="${STACK_NAME}" --volumes --force
+stack:: docker-compose.yml
+	docker-compose --file docker-compose.yml --project-name ${STACK_NAME} build --pull
+	docker-compose --file docker-compose.yml --project-name ${STACK_NAME} push
+	docker stack deploy --compose-file docker-compose.yml --prune ${STACK_NAME}
 docker-compose.yml: ${SECRET_FILE_NAMES}
