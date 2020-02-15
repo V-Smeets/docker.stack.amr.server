@@ -52,6 +52,19 @@ secret.certbot.directadmin.username:
 secret.certbot.directadmin.password:
 	echo "password" >$@
 
+# Images
+all:: images
+images:
+images: vsmeets/docker.stack.${STACK_NAME}.amqp \
+	vsmeets/docker.stack.${STACK_NAME}.certbot \
+	vsmeets/docker.stack.${STACK_NAME}.nginx
+vsmeets/docker.stack.${STACK_NAME}.amqp:
+	./build-image "$@" amqp
+vsmeets/docker.stack.${STACK_NAME}.certbot:
+	./build-image "$@" certbot
+vsmeets/docker.stack.${STACK_NAME}.nginx:
+	./build-image "$@" nginx
+
 # Stack
 all:: stack
 clean::
