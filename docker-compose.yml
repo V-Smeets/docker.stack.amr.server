@@ -59,9 +59,6 @@ services:
       - "amqp.shovel.client.password"
       - "amqp.shovel.server.user"
       - "amqp.shovel.server.password"
-    environment:
-      RABBITMQ_DEFAULT_USER_FILE: "/run/secrets/amqp.admin.user"
-      RABBITMQ_DEFAULT_PASS_FILE: "/run/secrets/amqp.admin.password"
     volumes:
       - "amqp-data:/var/lib/rabbitmq"
     networks:
