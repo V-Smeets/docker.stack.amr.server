@@ -24,6 +24,16 @@ function rabbit_password_hashing_sha256()
     echo "$saltedHashB64"
 }
 
+configFile="/etc/rabbitmq/rabbitmq.conf"
+cat > "$configFile" <<-EOT
+listeners.tcp.default = 5672
+default_user = $(< /run/secrets/amqp.admin.user)
+default_pass = $(< /run/secrets/amqp.admin.password)
+loopback_users.$(< /run/secrets/amqp.admin.user) = false
+management.tcp.port = 15672
+management.path_prefix = /amqp
+EOT
+
 definitionsFile="/etc/rabbitmq/definitions.json"
 if [ -f "/var/lib/rabbitmq/.erlang.cookie" ]
 then
@@ -114,6 +124,7 @@ else
 	    ]
 	}
 	EOT
+	echo "management.load_definitions = $definitionsFile" >> "$configFile"
 fi
 
 exec docker-entrypoint.sh "$@"
