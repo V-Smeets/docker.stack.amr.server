@@ -46,9 +46,7 @@ networks:
 
 services:
   amqp:
-    build:
-      context: "./amqp"
-    image: "127.0.0.1:5000/amr-server-amqp"
+    image: "vsmeets/docker.stack.amr-server.amqp"
     hostname: "amr-server"
     secrets:
       - "amqp.admin.user"
@@ -77,9 +75,7 @@ services:
       # "25672:25672"
 
   certbot:
-    build:
-      context: "./certbot"
-    image: "127.0.0.1:5000/amr-server-certbot"
+    image: "vsmeets/docker.stack.amr-server.certbot"
     secrets:
       - "certbot.directadmin.url"
       - "certbot.directadmin.username"
@@ -92,9 +88,7 @@ services:
       - "net"
 
   nginx:
-    build:
-      context: "./nginx"
-    image: "127.0.0.1:5000/amr-server-nginx"
+    image: "vsmeets/docker.stack.amr-server.nginx"
     volumes:
       - "certbot-config:/etc/letsencrypt:ro"
     networks:
