@@ -1,5 +1,8 @@
 #
 STACK_NAME		= amr-server
+TARGETS			= amqp \
+			  certbot \
+			  nginx
 SECRET_NAMES		= amqp.admin.user \
 			  amqp.admin.password \
 			  amqp.amr.client.user \
@@ -14,6 +17,12 @@ SECRET_NAMES		= amqp.admin.user \
 			  certbot.directadmin.username \
 			  certbot.directadmin.password
 SECRET_FILE_NAMES	= ${SECRET_NAMES:%=secret.%}
+PLATFORMS		= linux/amd64 \
+			  linux/arm/v7
+
+comma			:= ,
+empty			:=
+space			:= $(empty) $(empty)
 
 # General
 all::
@@ -55,15 +64,10 @@ secret.certbot.directadmin.password:
 # Images
 all:: images
 images:
-images: vsmeets/docker.stack.${STACK_NAME}.amqp \
-	vsmeets/docker.stack.${STACK_NAME}.certbot \
-	vsmeets/docker.stack.${STACK_NAME}.nginx
-vsmeets/docker.stack.${STACK_NAME}.amqp:
-	./build-image "$@" amqp
-vsmeets/docker.stack.${STACK_NAME}.certbot:
-	./build-image "$@" certbot
-vsmeets/docker.stack.${STACK_NAME}.nginx:
-	./build-image "$@" nginx
+	docker buildx bake \
+		$(foreach target,$(TARGETS), --set=$(target).platform="$(subst $(space),$(comma),$(PLATFORMS))") \
+		--pull \
+		$(foreach target,$(TARGETS), --set=$(target).output=type=registry)
 
 # Stack
 all:: stack
