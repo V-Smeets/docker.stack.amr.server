@@ -110,7 +110,7 @@ else
 		{
 		    "user": "$(< /run/secrets/amqp.shovel.client.user)",
 		    "vhost": "/",
-		    "configure": "",
+		    "configure": ".*",
 		    "write": "",
 		    "read": ".*"
 		},
